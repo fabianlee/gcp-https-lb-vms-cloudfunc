@@ -1,0 +1,27 @@
+cluster_type: autopilot
+cluster_name: ap-pub-10-0-91-0
+is_regional_cluster: 1
+subnet_name: pub-10-0-91-0
+subnet_prefix: 10.0.91
+
+# for SAN certificate with custom CA
+cert_CA: myCA.{{cluster_name}}.local
+cert_domains_primary_ingress: ["my-primary.{{cluster_name}}.local","my-primary-alt.{{cluster_name}}.local"]
+cert_domains_secondary_ingress: ["my-secondary.{{cluster_name}}.local"]
+
+# 5 takes Autopilot from 2->7 nodes
+balloon_replicas: 5
+
+# Autopilot does not allow cert signing requests done by incluster control plane
+asm_type: managed
+asm_version: "1.12" # managed ASM available starting at 1.12
+
+# for HTTPS LB public ingress
+https_lb_primary: true
+https_lb_primary_container_native_routing: false
+https_lb_secondary: true
+https_lb_secondary_container_native_routing: false
+
+# for TCP LB
+ingressgateway_primary: true
+ingressgateway_secondary: true

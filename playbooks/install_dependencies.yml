@@ -1,0 +1,24 @@
+#
+# DEPRECTED use 'requirements.yaml' instead !!!!
+#
+# prereq needed for ansible playbooks
+---
+
+- hosts: localhost
+  become: no
+  tasks:
+
+#    # https://galaxy.ansible.com/community/kubernetes
+#    - name: get community.kubernetes collection from ansible galaxy, be patient can take 5 minutes
+#      command:
+#        cmd: ansible-galaxy collection install community.kubernetes:2.0.1
+#
+#    # https://galaxy.ansible.com/community/crypto
+#    - name: get community.crypto collection from ansible galaxy, be patient can take 5 minutes
+#      command:
+#        cmd: ansible-galaxy collection install community.crypto:1.7.1
+
+     - name: install galaxy collections from requirements yaml
+       command:
+         cmd: ansible-galaxy install -r {{playbook_dir}}/requirements.yaml
+

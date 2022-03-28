@@ -1,0 +1,26 @@
+cluster_type: standard
+cluster_name: std-prv-10-0-100-0
+is_regional_cluster: 0
+subnet_name: prv-10-0-100-0
+subnet_prefix: 10.0.100
+
+# for SAN certificate with custom CA
+cert_CA: myCA.{{cluster_name}}.local
+cert_domains_primary_ingress: ["my-primary.{{cluster_name}}.local","my-primary-alt.{{cluster_name}}.local"]
+cert_domains_secondary_ingress: ["my-secondary.{{cluster_name}}.local"]
+
+# no need to scale standard GKE cluster
+balloon_replicas: 0
+
+asm_type: incluster
+asm_version: "1.11" # leaves room for upgrade testing
+
+# for HTTPS LB public ingress
+https_lb_primary: true
+https_lb_primary_container_native_routing: false
+https_lb_secondary: true
+https_lb_secondary_container_native_routing: false
+
+# for TCP LB
+ingressgateway_primary: true
+ingressgateway_secondary: true

@@ -1,0 +1,11 @@
+---
+ansible_python_interpreter: python3
+
+# project id will be auto-generated, this is the name
+project_name: my-gcphttp-proj1
+region: us-east1
+
+# custom VPC network
+network_name: mynetwork
+
+cert_domains_list: ["httpslb.fabianlee.org"]

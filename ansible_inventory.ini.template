@@ -1,0 +1,22 @@
+# show all vars for host: ansible -m debug -a var=hostvars[inventory_hostname] vm-prv-10-0-100-0
+# show private IP: ansible -m debug -a var=hostvars[inventory_hostname].ansible_host vm-prv-10-0-101-0
+#
+# test ping to all: ansible -m ping all
+# if issues with key exchange, try clearing: ssh-keygen -f ~/.ssh/known_hosts -R <IP>
+#
+
+localhost ansible_connection=local
+
+[jumpboxes_public]
+apache1-10-0-90-0 ansible_host=$pub1
+apache2-10-0-90-0 ansible_host=$pub2
+
+[jumpboxes:children]
+jumpboxes_public
+
+[jumpboxes:vars]
+ansible_ssh_private_key_file=./gcp-ssh
+ansible_user=ubuntu
+
+[all:vars]
+forall=yes

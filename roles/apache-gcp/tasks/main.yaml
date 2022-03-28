@@ -1,0 +1,47 @@
+---
+
+- name: install list of packages, debian based
+  apt:
+    pkg:
+    - net-tools # netstat
+    - jq # json tool
+    - vim
+    - curl
+    - whois
+    - netcat
+    - traceroute
+    - apache2
+    state: present
+    update_cache: true
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  register: apt_install
+  retries: 3
+  delay: 60
+  until: apt_install is success or ('Unable to acquire the dpkg frontend lock' not in apt_install.msg)
+
+- name: "UFW - Allow HTTP port"
+  ufw:
+    rule: allow
+    port: "80"
+    proto: tcp
+
+- name: get IP address from google metadata
+  command:
+    cmd: 'curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip'
+  register: gcp_ip
+
+
+- name: get hostname from google metadata
+  command:
+    cmd: 'curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/hostname'
+  register: gcp_hostname
+
+
+- name: create default web content
+  copy:
+    dest: /var/www/html/index.html
+    content: |
+      <html><head></head><body>
+      <h1>Hello from {{inventory_hostname}}</h1>
+      <p>{{gcp_hostname.stdout}} on IP {{gcp_ip.stdout}}</p>
+      </body></html>

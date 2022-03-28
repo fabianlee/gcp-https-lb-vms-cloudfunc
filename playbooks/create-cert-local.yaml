@@ -1,0 +1,10 @@
+#
+# creates CA, key and cert for load balancers
+---
+
+- hosts: localhost
+  become: no
+  gather_facts: no
+  connection: local
+  roles:
+    - cert-with-ca-local
