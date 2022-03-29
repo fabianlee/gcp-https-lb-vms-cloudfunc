@@ -90,6 +90,7 @@ gcloud compute health-checks create http $healthcheck_name --host='' --request-p
 if [ "$lb_type" = "int" ]; then
   gcloud compute backend-services create $backend_name --health-checks=$healthcheck_name --health-checks-region=$region --port-name=http --protocol=HTTP --load-balancing-scheme=INTERNAL_MANAGED --enable-logging --logging-sample-rate=1 $location_flag
 elif [ "$lb_type" = "ext" ]; then
+  # --security-policy would apply Cloud Armor policy
   gcloud compute backend-services create $backend_name --health-checks=$healthcheck_name --port-name=http --protocol=HTTP --load-balancing-scheme=EXTERNAL --enable-logging --logging-sample-rate=1 $location_flag
 fi
 
@@ -118,6 +119,7 @@ gcloud compute url-maps create $lb_name --default-service=$backend_name $locatio
 if [ "$lb_type" = "int" ]; then
   gcloud compute target-https-proxies create $target_https_proxy_name --url-map-region=$region --url-map $lb_name --ssl-certificates-region=$region --ssl-certificates=lbcert1 $location_flag
 elif [ "$lb_type" = "ext" ]; then
+  # --ssl-policy would assign TLS min version policy
   gcloud compute target-https-proxies create $target_https_proxy_name --url-map $lb_name --ssl-certificates=lbcert1 --global
 fi
 
