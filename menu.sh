@@ -19,21 +19,20 @@ menu_items=(
   "cloudnat,Create Cloud NAT for public egress of private IP"
   ""
   "sshmetadata,Load ssh key into project metadata"
-  "vms,Create VM instances in subnets"
+  "vms,Create GCP VM instances in subnets"
   "enablessh,Setup ssh config for bastions and ansible inventory"
-  "ssh,SSH into jumpbox"
+  "ssh,SSH into GCP VMs"
   ""
-  "aping","ansible ping to vms"
-  "apache","Install apache on vms"
-  "cert","Create local key and cert"
+  "aping","ansible ping to GCP vms"
+  "apache","Install apache on GCP vm instances"
+  "intlb","Create GCP Internal HTTPS LB"
+  "extlb","Create GCP External HTTPS LB"
   ""
   "delvms,Delete VM instances"
   "delnetworks,Delete networks and Cloud NAT"
 )
 # hidden menu items, available for action but not shown
-#  "k8s-tinytools,Apply tiny-tools Daemonset to cluster"
-#  "k8s-witest,Apply workload identity test"
-#  "k8s-maintenance,Apply maintenance page to primary ingress"
+#  "cacert","Create local CA, key and cert"
 
 function showMenu() {
   echo ""
@@ -281,9 +280,27 @@ while [ 1 == 1 ]; do
       [ $retVal -eq 0 ] && done_status[$answer]="OK" || done_status[$answer]="ERR"
       ;;
 
-    cert)
+    cacert)
       set -x
-      ansible-playbook playbooks/create-cert-local.yaml -l localhost
+      ansible-playbook playbooks/create-ca-cert-local.yaml -l localhost
+      retVal=$?
+      set +x 
+
+      [ $retVal -eq 0 ] && done_status[$answer]="OK" || done_status[$answer]="ERR"
+      ;;
+
+    intlb)
+      set -x
+      ansible-playbook playbooks/gcp-loadbalancer-internal.yaml -l localhost
+      retVal=$?
+      set +x 
+
+      [ $retVal -eq 0 ] && done_status[$answer]="OK" || done_status[$answer]="ERR"
+      ;;
+
+    extlb)
+      set -x
+      ansible-playbook playbooks/gcp-loadbalancer-external.yaml -l localhost
       retVal=$?
       set +x 
 
