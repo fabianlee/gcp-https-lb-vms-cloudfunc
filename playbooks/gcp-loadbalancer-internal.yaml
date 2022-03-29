@@ -1,0 +1,15 @@
+---
+
+- hosts: localhost
+  become: no
+  gather_facts: no
+  connection: local
+
+  tasks:
+
+    - name: call script to create GCP internal load balancer
+      command:
+        cmd: ./create-https-lb.sh int {{network_name}} {{lb_subnet_name}} {{region}} {{cert_domains_list|first}}
+        chdir: "{{playbook_dir}}/../gcloud"
+      register: lb_res
+    - debug: msg="{{lb_res}}"

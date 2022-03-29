@@ -7,5 +7,6 @@ region: us-east1
 
 # custom VPC network
 network_name: mynetwork
+lb_subnet_name: pub-10-0-90-0
 
 cert_domains_list: ["httpslb.fabianlee.org"]
