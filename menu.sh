@@ -12,6 +12,7 @@ declare -A done_status
 # 1st column = action
 # 2nd column = description
 menu_items=(
+  "prereq","Prereq OS modules and ansible galaxy collections"
   "tfvars,Use ansible vars to populate tf/envs/all.tfvars"
   "project,Create gcp project and enable services"
   "svcaccount,Create service account for provisioning"
@@ -148,7 +149,12 @@ while [ 1 == 1 ]; do
 
   case $answer in
     prereq)
-      ansible-galaxy collection install -r playbooks/requirements.yaml
+      set -x
+      ansible-playbook playbooks/install_dependencies.yml -l localhost
+      retVal=$?
+      set +x
+
+      [ $retVal -eq 0 ] && done_status[$answer]="OK" || done_status[$answer]="ERR"
       ;;
 
     tfvars)

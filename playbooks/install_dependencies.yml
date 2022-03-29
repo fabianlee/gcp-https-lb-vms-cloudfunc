@@ -1,12 +1,27 @@
 #
-# DEPRECTED use 'requirements.yaml' instead !!!!
-#
 # prereq needed for ansible playbooks
 ---
 
 - hosts: localhost
   become: no
   tasks:
+
+     - name: pip3 package required
+       delegate_to: localhost
+       pip:
+         name:
+           - kubernetes
+         state: latest
+         executable: "{{item}}"
+       loop: ["/usr/bin/pip3"]
+
+     - name: local os packages needed
+       delegate_to: localhost
+       become: yes
+       apt:
+         pkg:
+         - python3-netaddr
+         state: present
 
 #    # https://galaxy.ansible.com/community/kubernetes
 #    - name: get community.kubernetes collection from ansible galaxy, be patient can take 5 minutes
