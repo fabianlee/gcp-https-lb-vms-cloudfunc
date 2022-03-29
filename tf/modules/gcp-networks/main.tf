@@ -42,8 +42,10 @@ resource "google_compute_subnetwork" "https-lb-subnetwork" {
   role          = "ACTIVE"
  
   # https://cloud.google.com/sdk/gcloud/reference/compute/networks/subnets/create#--purpose
-  purpose       = "INTERNAL_HTTPS_LOAD_BALANCER" # internal HTTPS LB
-  #purpose       = "REGIONAL_MANAGED_PROXY" # regional HTTPS LB
+  purpose       = "INTERNAL_HTTPS_LOAD_BALANCER" # internal regioal HTTPS LB
+  # https://cloud.google.com/load-balancing/docs/l7-internal/proxy-only-subnets
+  # the value below is actually preferred
+  #purpose       = "REGIONAL_MANAGED_PROXY" # internal regional HTTPS LB
 }
 
 
