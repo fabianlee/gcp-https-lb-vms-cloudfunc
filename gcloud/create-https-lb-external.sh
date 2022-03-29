@@ -131,8 +131,8 @@ fi
 # service-label is only for internal https lb for internal dns entry
 # if network or subnet are in shared VPC, then use fully qualified path e.g. 'projects/'
 if [ "$lb_type" = "int" ]; then
-  gcloud compute forwarding-rules create $fwd_rule_name --subnet-region=$region --load-balancing-scheme=INTERNAL_MANAGED --subnet=$subnet_name --network=$network_name --ports=443 --target-https-proxy=$target_https_proxy_name --target-https-proxy-region=$region --service-label=${fwd_rule_name}-dns $location_flag
-  echo "You can reach int LB at DNS: ${fwd_rule_name}-dns.il7.${region}.lb.${project_id}.internal"
+  gcloud compute forwarding-rules create $fwd_rule_name --subnet-region=$region --load-balancing-scheme=INTERNAL_MANAGED --subnet=$subnet_name --network=$network_name --ports=443 --target-https-proxy=$target_https_proxy_name --target-https-proxy-region=$region --service-label=int $location_flag
+  echo "You can reach int LB at DNS: int.${fwd_rule_name}.il7.${region}.lb.${project_id}.internal"
 elif [ "$lb_type" = "ext" ]; then
   gcloud compute forwarding-rules create $fwd_rule_name --load-balancing-scheme=EXTERNAL --ports=443 --target-https-proxy=$target_https_proxy_name $location_flag
   $IP=$(gcloud compute forwarding-rules describe $fwd_rule_name --global | grep -i IPAddress)
