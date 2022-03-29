@@ -28,6 +28,7 @@ menu_items=(
   "intlb","Create GCP Internal HTTPS LB"
   "extlb","Create GCP External HTTPS LB"
   ""
+  "dellbs,Delete GCP HTTPS load balancers"
   "delvms,Delete VM instances"
   "delnetworks,Delete networks and Cloud NAT"
 )
@@ -307,39 +308,32 @@ while [ 1 == 1 ]; do
       [ $retVal -eq 0 ] && done_status[$answer]="OK" || done_status[$answer]="ERR"
       ;;
 
+    dellbs)
+      set -x
+      ansible-playbook playbooks/DELETE-gcp-loadbalancers-external.yaml -l localhost
+      retVal=$?
+      set +x
+
+      set +x 
+      [ $retVal -eq 0 ] && done_status[$answer]="OK" || done_status[$answer]="ERR"
+      ;;
+
     delnetworks)
-      if [ $USE_TERRAFORM -eq 1 ]; then
-        set -x
-        gcloud/delete-network-endpoint-groups.sh $project_id $network_name $region
-        cd tf && make cloudnat-destroy && make networks-destroy
-        retVal=$?
-        set +x
-        cd ..
-      else
-        set -x
-        gcloud/delete-network-endpoint-groups.sh $project_id $network_name $region
-        gcloud/delete-networks-cloudnat.sh $project_id $network_name $region
-        retVal=$?
-        set +x 
-      fi
+      set -x
+      gcloud/delete-network-endpoint-groups.sh $project_id $network_name $region
+      cd tf && make cloudnat-destroy && make networks-destroy
+      retVal=$?
+      set +x
+      cd ..
 
       [ $retVal -eq 0 ] && done_status[$answer]="OK" || done_status[$answer]="ERR"
       ;;
     delvms)
-      if [ $USE_TERRAFORM -eq 1 ]; then
-        set -x
-        cd tf && make vms-destroy
-        retVal=$?
-        set +x
-        cd ..
-      else
-        set -x
-        retVal=0
-        for subnet in pub-10-0-90-0 pub-10-0-91-0 prv-10-0-100-0 prv-10-0-101-0; do
-          gcloud/delete-vm-instance.sh $project_id vm-$subnet $region
-          [ $? -eq 0 ] || retVal=$?
-        done
-      fi
+      set -x
+      cd tf && make vms-destroy
+      retVal=$?
+      set +x
+      cd ..
 
       set +x 
       [ $retVal -eq 0 ] && done_status[$answer]="OK" || done_status[$answer]="ERR"
