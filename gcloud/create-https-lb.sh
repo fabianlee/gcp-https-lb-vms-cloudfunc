@@ -12,7 +12,7 @@ region="$4"
 domain="$5"
 if [[ -z "$lb_type" || -z "$network_name" || -z "$subnet_name" || -z "$region" || -z "$domain" ]]; then
   echo "Usage: lb_type=int|ext networkName subnetwork region domain"
-  echo "Example: int mynetwork pub-10-0-90-0 $region httpslb.fabianlee.org"
+  echo "Example: int mynetwork pub-10-0-90-0 us-east1 httpslb.fabianlee.org"
   exit 1
 fi
 
