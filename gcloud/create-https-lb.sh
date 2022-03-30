@@ -120,7 +120,7 @@ if [ "$lb_type" = "int" ]; then
   gcloud compute target-https-proxies create $target_https_proxy_name --url-map-region=$region --url-map $lb_name --ssl-certificates-region=$region --ssl-certificates=lbcert1 $location_flag
 elif [ "$lb_type" = "ext" ]; then
   # --ssl-policy would assign TLS min version policy
-  gcloud compute target-https-proxies create $target_https_proxy_name --url-map $lb_name --ssl-certificates=lbcert1 --global
+  gcloud compute target-https-proxies create $target_https_proxy_name --url-map $lb_name --ssl-certificates=lbcert1 $location_flag
 fi
 
 # going to use ephemeral IP with DNS instead of static internal IP
