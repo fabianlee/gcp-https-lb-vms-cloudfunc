@@ -1,5 +1,5 @@
 # originally from CloudFoundry sample: https://github.com/fabianlee/cf-python-maintenancepage/blob/master/maintenance.py
-from flask import Flask
+from flask import Flask, render_template
 from flask import jsonify
 import os
 
