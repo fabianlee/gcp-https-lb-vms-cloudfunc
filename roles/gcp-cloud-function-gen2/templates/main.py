@@ -1,6 +1,5 @@
 # originally from CloudFoundry sample: https://github.com/fabianlee/cf-python-maintenancepage/blob/master/maintenance.py
-from flask import Flask, render_template
-from flask import jsonify
+from flask import Flask, render_template, jsonify
 import os
 
 # long multi-line string representing HTML file
@@ -42,12 +41,12 @@ infuture.setMinutes(infuture.getMinutes() + 30);
 app = Flask(__name__)
 
 @app.route('/maintenance_str')
-def return_maintenance_str(request):
+def return_maintenance_string(request):
     return HTML_STRING, 503
 
 @app.route('/maintenance_file')
 def return_maintenance_file(request):
-    return render_template('maintenance.html'), 503
+    return render_template(os.path.realpath('maintenance.html')), 503
 
 @app.route('/')
 def return_root(request):

@@ -36,7 +36,7 @@
 # https://cloud.google.com/sdk/gcloud/reference/beta/functions/deploy
 - name: deploy cloud function gen2 using gcloud
   command:
-    cmd: 'gcloud {{gcloud_channel_gen2}} functions deploy return-maintenance-file --entry-point=return_maintenance_file --gen2 --runtime python38 --trigger-http --allow-unauthenticated --region={{region}} --set-env-vars="MAINTENANCE_MESSAGE=this is under maintenance"'
+    cmd: 'gcloud {{gcloud_channel_gen2}} functions deploy return-maintenance-string --entry-point=return_maintenance_string --gen2 --runtime python38 --trigger-http --allow-unauthenticated --min-instances=1 --region={{region}} --set-env-vars="MAINTENANCE_MESSAGE=this is under maintenance"'
     chdir: /tmp/cloudfunction
   register: deploy_res
 - debug: msg="{{deploy_res}}"
@@ -44,18 +44,18 @@
 # https://cloud.google.com/functions/docs/2nd-gen/configuration-settings#concurrency
 - name: set 200 concurrency for gen2 cloud function, allow multiple requests on single instance
   command:
-    cmd: gcloud {{gcloud_channel_gen2}} run services update return-maintenance-file --concurrency 200 --cpu=1 --region={{region}}
+    cmd: gcloud {{gcloud_channel_gen2}} run services update return-maintenance-string --concurrency 200 --cpu=1 --region={{region}}
 
 - name: find URL of Cloud Function
   command:
-    cmd: 'gcloud {{gcloud_channel_gen2}} functions describe return-maintenance-file --format "value(serviceConfig.uri)" --region={{region}} --gen2'
+    cmd: 'gcloud {{gcloud_channel_gen2}} functions describe return-maintenance-string --format "value(serviceConfig.uri)" --region={{region}} --gen2'
   register: cloudfunc_url
 - debug:
     msg: "curl {{cloudfunc_url.stdout}}"
 
 - name: create serverless NEG for this cloud function
   command:
-    cmd: gcloud compute network-endpoint-groups create maintenance-neg --region={{region}} --network-endpoint-type=serverless --cloud-run-service=return-maintenance-file
+    cmd: gcloud compute network-endpoint-groups create maintenance-neg --region={{region}} --network-endpoint-type=serverless --cloud-run-service=return-maintenance-string
   failed_when: false
 
 - name: create backend service
