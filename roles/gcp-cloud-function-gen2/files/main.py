@@ -1,4 +1,3 @@
-# originally from CloudFoundry sample: https://github.com/fabianlee/cf-python-maintenancepage/blob/master/maintenance.py
 from flask import Flask, render_template, render_template_string, jsonify
 import os
 
@@ -16,23 +15,24 @@ print(maint_file_as_string)
 MAINTENANCE_MESSAGE = os.getenv("MAINTENANCE_MESSAGE","This is the fallback maintenance message")
 print("MAINTENANCE_MESSAGE = {}".format(MAINTENANCE_MESSAGE))
 
+# get response type
 RESPONSE_TYPE = os.getenv("RESPONSE_TYPE","HTML")
 print("RESPONSE_TYPE = {}".format(RESPONSE_TYPE))
 
 
 app = Flask(__name__)
 
-@app.route('/maintenance-switch')
-def return_maintenance_string(request):
+@app.route('/maintenance')
+def maintenance_switch(request):
     if RESPONSE_TYPE=="DEBUG":
       return show_debug(request)
     elif RESPONSE_TYPE=="JSON":
       return show_json(request)
     else:
-      return show_string(request)
+      return show_html(request)
 
-@app.route('/maintenance')
-def show_string(request):
+@app.route('/html')
+def show_html(request):
     return render_template_string(maint_file_as_string, maintenance_message=MAINTENANCE_MESSAGE), 503
 
 @app.route('/json')
