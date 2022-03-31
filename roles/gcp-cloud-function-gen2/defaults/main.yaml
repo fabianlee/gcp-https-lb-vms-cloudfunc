@@ -1,0 +1,2 @@
+# for gcloud 377, gen2 cloud functions are in beta channel
+gcloud_channel_gen2: beta

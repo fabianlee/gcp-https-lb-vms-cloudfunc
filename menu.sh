@@ -26,6 +26,7 @@ menu_items=(
   ""
   "aping","ansible ping to GCP vms"
   "apache","Install apache on GCP vm instances"
+  "cloudfunc","Deploy GCP Cloud Function gen2 \(beta\)"
   "intlb","Create GCP Internal HTTPS LB"
   "extlb","Create GCP External HTTPS LB"
   ""
@@ -281,6 +282,15 @@ while [ 1 == 1 ]; do
     apache)
       set -x
       ansible-playbook playbooks/apache-gcp.yaml -l jumpboxes_public
+      retVal=$?
+      set +x 
+
+      [ $retVal -eq 0 ] && done_status[$answer]="OK" || done_status[$answer]="ERR"
+      ;;
+
+    cloudfunc)
+      set -x
+      ansible-playbook playbooks/gcp-cloud-function.yaml -l localhost
       retVal=$?
       set +x 
 

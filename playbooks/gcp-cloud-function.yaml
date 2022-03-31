@@ -1,0 +1,9 @@
+---
+
+- hosts: localhost
+  become: no
+  gather_facts: no
+  connection: local
+
+  roles:
+    - gcp-cloud-function-gen2

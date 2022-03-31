@@ -1,0 +1,101 @@
+---
+
+- name: enable gcloud services for GCP Cloud Function
+  command:
+    cmd: gcloud services enable cloudfunctions.googleapis.com cloudbuild.googleapis.com
+
+- name: enable gcloud services for GCP Cloud Function gen2 which also uses container registry
+  command:
+    cmd: gcloud services enable cloudresourcemanager.googleapis.com run.googleapis.com artifactregistry.googleapis.com containerregistry.googleapis.com
+
+- name: Pause for 30 seconds to wait for service to enable
+  pause:
+    seconds: 30
+
+# https://cloud.google.com/sdk/gcloud/reference/artifacts/repositories/create#--repository-format
+- name: create artifact repository repo
+  command:
+    cmd: gcloud artifacts repositories create my-repo --location={{region}} --repository-format=docker
+  register: create_repo
+  failed_when: create_repo.rc!=0 and not "repository already exists" in create_repo.stderr
+
+- name: create directory for deployment
+  file:
+    path: /tmp/cloudfunction
+    state: directory
+
+- name: construct flask app python file
+  template:
+    src: main.py
+    dest: /tmp/cloudfunction/main.py
+- name: construct flask app python file
+  template:
+    src: maintenance.html
+    dest: /tmp/cloudfunction/maintenance.html
+
+# https://cloud.google.com/sdk/gcloud/reference/beta/functions/deploy
+- name: deploy cloud function gen2 using gcloud
+  command:
+    cmd: 'gcloud {{gcloud_channel_gen2}} functions deploy return-maintenance-file --entry-point=return_maintenance_file --gen2 --runtime python38 --trigger-http --allow-unauthenticated --region={{region}} --set-env-vars="MAINTENANCE_MESSAGE=this is under maintenance"'
+    chdir: /tmp/cloudfunction
+  register: deploy_res
+- debug: msg="{{deploy_res}}"
+
+# https://cloud.google.com/functions/docs/2nd-gen/configuration-settings#concurrency
+- name: set 200 concurrency for gen2 cloud function, allow multiple requests on single instance
+  command:
+    cmd: gcloud {{gcloud_channel_gen2}} run services update return-maintenance-file --concurrency 200 --cpu=1 --region={{region}}
+
+- name: find URL of Cloud Function
+  command:
+    cmd: 'gcloud {{gcloud_channel_gen2}} functions describe return-maintenance-file --format "value(serviceConfig.uri)" --region={{region}} --gen2'
+  register: cloudfunc_url
+- debug:
+    msg: "curl {{cloudfunc_url.stdout}}"
+
+- name: create serverless NEG for this cloud function
+  command:
+    cmd: gcloud compute network-endpoint-groups create maintenance-neg --region={{region}} --network-endpoint-type=serverless --cloud-run-service=return-maintenance-file
+  failed_when: false
+
+- name: create backend service
+  command:
+    cmd: gcloud compute backend-services create maintenance-backend --load-balancing-scheme=EXTERNAL --global
+  failed_when: false
+
+- name: add serverless NEG to backend service
+  command:
+    cmd: gcloud compute backend-services add-backend maintenance-backend --global --network-endpoint-group=maintenance-neg --network-endpoint-group-region={{region}}
+  failed_when: false
+
+- name: url map for maintenance
+  command:
+    cmd: gcloud compute url-maps create maintenance-lb1 --default-service=maintenance-backend --global
+  failed_when: false
+
+# my current experiment as of 11:28p is to set the target-https-proxies with the url-map=extlb-lb1
+# then update the forwarding-rules to the target-https-proxy of maintenance-https-proxy
+# still did not work
+# so now going to do comletely independent and then try swap
+
+- name: target https proxy
+  command:
+    cmd: gcloud compute target-https-proxies create maintenance-https-proxy --ssl-certificates=lbcert1 --url-map=maintenance-lb1 --global
+  failed_when: false
+
+# https://cloud.google.com/load-balancing/docs/https/setting-up-https-serverless#creating_the_load_balancer
+- debug:
+    msg: "health checks are not supported for backend services with serverless NEG backends. no need to create health check"
+
+- command:
+    cmd: gcloud compute forwarding-rules create maintenance-frontend --load-balancing-scheme=EXTERNAL --target-https-proxy=maintenance-https-proxy --ports=443 --global
+  failed_when: false
+
+# https://cloud.google.com/sdk/gcloud/reference/compute/forwarding-rules/set-target
+# trying to switch backends to LB:
+# gcloud compute forwarding-rules set-target extlb-frontend --target-https-proxy=maintenance-https-proxy --global
+# gcloud compute forwarding-rules set-target extlb-frontend --target-https-proxy=extlb-target-https-proxy --global
+# 
+# https://cloud.google.com/sdk/gcloud/reference/compute/url-maps/set-default-service
+# just setting the above fowarding rule was not enough, so now trying to set the url-map default backend
+# gcloud compute url-maps set-default-service extlb-lb1 --default-service=maintenance-backend --global
