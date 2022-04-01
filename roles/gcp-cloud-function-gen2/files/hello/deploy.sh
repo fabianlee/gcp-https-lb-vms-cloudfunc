@@ -7,10 +7,10 @@ funcname=hellogen2
 channel=beta
 region=us-east1
 
-#gcloud services enable cloudfunctions.googleapis.com cloudbuild.googleapis.com
-#gcloud services enable cloudresourcemanager.googleapis.com run.googleapis.com artifactregistry.googleapis.com containerregistry.googleapis.com
+gcloud services enable cloudfunctions.googleapis.com cloudbuild.googleapis.com
+gcloud services enable cloudresourcemanager.googleapis.com run.googleapis.com artifactregistry.googleapis.com containerregistry.googleapis.com
 
-#gcloud artifacts repositories create my-repo --location=$region --repository-format=docker
+gcloud artifacts repositories create my-repo --location=$region --repository-format=docker
 
 gcloud $channel functions deploy $funcname --entry-point=hello --gen2 --runtime python38 --trigger-http --allow-unauthenticated --min-instances=1 --region=$region
 
