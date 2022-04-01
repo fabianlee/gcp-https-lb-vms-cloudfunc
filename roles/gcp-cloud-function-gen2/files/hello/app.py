@@ -1,7 +1,6 @@
 import flask
 import main
 
-
 app = flask.Flask(__name__)
 
 @app.route('/', defaults={'path':''})
@@ -11,4 +10,3 @@ def index(path):
 
 if __name__ == '__main__':
     app.run()
-

@@ -20,9 +20,6 @@ RESPONSE_TYPE = os.getenv("RESPONSE_TYPE","HTML")
 print("RESPONSE_TYPE = {}".format(RESPONSE_TYPE))
 
 
-app = Flask(__name__)
-
-@app.route('/maintenance')
 def maintenance_switch(request):
     if RESPONSE_TYPE=="DEBUG":
       return show_debug(request)
@@ -31,18 +28,12 @@ def maintenance_switch(request):
     else:
       return show_html(request)
 
-@app.route('/html')
 def show_html(request):
     return render_template_string(maint_file_as_string, maintenance_message=MAINTENANCE_MESSAGE), 503
 
-@app.route('/json')
 def show_json(request):
     return jsonify(type='Exception',status=503,response=os.getenv("MAINTENANCE_MESSAGE")), 200, {'StatusHeader': 'Status: maintenance window'}
 
-@app.route('/<path:dummy>')
 def show_debug(request):
-    return "trying to reach {}".format(request.full_path)
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    return "FALLBACK trying to reach {}".format(request.full_path)
 

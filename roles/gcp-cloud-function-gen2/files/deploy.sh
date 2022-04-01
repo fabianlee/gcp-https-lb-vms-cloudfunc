@@ -3,8 +3,8 @@
 # Creates Python gen2 Cloud Function then creates external HTTPS LB to expose with custom certificate
 #
 
-funcname=hellogen2
-entry_point=hello
+funcname=maintgen2
+entry_point=maintenance_switch
 channel=beta
 region=us-east1
 
