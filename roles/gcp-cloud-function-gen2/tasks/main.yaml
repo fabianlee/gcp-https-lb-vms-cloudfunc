@@ -70,10 +70,8 @@
     cmd: gcloud compute url-maps create maintenance-lb1 --default-service=maintenance-backend --global
   failed_when: false
 
-# my current experiment as of 11:28p is to set the target-https-proxies with the url-map=extlb-lb1
-# then update the forwarding-rules to the target-https-proxy of maintenance-https-proxy
-# still did not work
-# so now going to do comletely independent and then try swap
+# the target-https-proxies and forwarding-rule is not needed if simply piggy-backing on existing LB
+# the switch of services is done by modifying the current url-maps to point to a different default service
 
 - name: target https proxy
   command:
@@ -88,11 +86,9 @@
     cmd: gcloud compute forwarding-rules create maintenance-frontend --load-balancing-scheme=EXTERNAL --target-https-proxy=maintenance-https-proxy --ports=443 --global
   failed_when: false
 
-# https://cloud.google.com/sdk/gcloud/reference/compute/forwarding-rules/set-target
-# trying to switch backends to LB:
-# gcloud compute forwarding-rules set-target extlb-frontend --target-https-proxy=maintenance-https-proxy --global
-# gcloud compute forwarding-rules set-target extlb-frontend --target-https-proxy=extlb-target-https-proxy --global
-# 
+# swapping backends to a single external HTTPS LB (e.g. services and its maintenance page)
 # https://cloud.google.com/sdk/gcloud/reference/compute/url-maps/set-default-service
-# just setting the above fowarding rule was not enough, so now trying to set the url-map default backend
 # gcloud compute url-maps set-default-service extlb-lb1 --default-service=maintenance-backend --global
+# gcloud compute url-maps set-default-service extlb-lb1 --default-service=extlb-backend --global
+# verify change
+# gcloud compute url-maps describe extlb-lb1 --global
