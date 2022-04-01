@@ -43,8 +43,8 @@ echo "health checks are not supported for backend services with serverless NEG b
 gcloud compute forwarding-rules create ${funcname}-frontend --load-balancing-scheme=EXTERNAL --target-https-proxy=${funcname}-https-proxy --ports=443 --global
 
 echo "Here is the IP address of the ${funcname}-frontend Load Balancer"
-gcloud compute forwarding-rules describe ${funcname}-frontend  --global | yq eval ".IPAddress"
+gcloud compute forwarding-rules describe ${funcname}-frontend  --global --format="value(IPAddress)"
 
-echo "Here is the URL direct to the Cloud Function"
+echo "Here is the direct URL to the Cloud Function"
 gcloud $channel functions describe $funcname --region $region --gen2 --format="value(serviceConfig.uri)"
 

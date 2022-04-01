@@ -3,6 +3,16 @@
 # Creates Python gen2 Cloud Function then creates external HTTPS LB to expose with custom certificate
 #
 
+# if --do-not-expose is non-empty then we
+# skip creation of: ssl-certificates, target-https-proxies and forwarding-rule
+# which is not necessary if this Cloud Function is going to be inserted into an existing LB
+do_not_expose="$1"
+if [ -n "$do_not_expose" ]; then
+  echo "Will create objects, but NOT expose to external with forwarding-rule and target-https-proxies"
+else
+  echo "Going to expose Cloud Function with external HTTPS LB"
+fi
+
 funcname=maintgen2
 entry_point=maintenance_switch
 channel=beta
@@ -27,24 +37,32 @@ gcloud compute backend-services add-backend ${funcname}-backend --global --netwo
 
 gcloud compute url-maps create ${funcname}-lb1 --default-service=${funcname}-backend --global
 
-# certificate and key for TLS
-domain=${funcname}.fabianlee.org
-if [ ! -f /tmp/$domain.key ]; then
-  openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
-  -keyout /tmp/$domain.key -out /tmp/$domain.crt \
-  -subj "/C=US/ST=CA/L=SFO/O=myorg/CN=$domain"
+if [ -z "$do_not_expose" ]; then
+
+  # certificate and key for TLS
+  domain=${funcname}.fabianlee.org
+  if [ ! -f /tmp/$domain.key ]; then
+    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+    -keyout /tmp/$domain.key -out /tmp/$domain.crt \
+    -subj "/C=US/ST=CA/L=SFO/O=myorg/CN=$domain"
+  fi
+  gcloud compute ssl-certificates create ${funcname}-lbcert --certificate=/tmp/$domain.crt --private-key=/tmp/$domain.key --global
+  
+  gcloud compute target-https-proxies create ${funcname}-https-proxy --ssl-certificates=${funcname}-lbcert --url-map=${funcname}-lb1 --global
+  
+  echo "health checks are not supported for backend services with serverless NEG backends. no need to create health check"
+  
+  gcloud compute forwarding-rules create ${funcname}-frontend --load-balancing-scheme=EXTERNAL --target-https-proxy=${funcname}-https-proxy --ports=443 --global
+  
+  echo "Here is the IP address of the ${funcname}-frontend Load Balancer"
+  gcloud compute forwarding-rules describe ${funcname}-frontend  --global --format="value(IPAddress)"
+
+else
+
+  echo "SKIP exposing $funcname with target-https-proxies and forwarding-rules, which is fine if we just want to inject the Cloud Function into an existing LB chain"
+
 fi
-gcloud compute ssl-certificates create ${funcname}-lbcert --certificate=/tmp/$domain.crt --private-key=/tmp/$domain.key --global
 
-gcloud compute target-https-proxies create ${funcname}-https-proxy --ssl-certificates=${funcname}-lbcert --url-map=${funcname}-lb1 --global
-
-echo "health checks are not supported for backend services with serverless NEG backends. no need to create health check"
-
-gcloud compute forwarding-rules create ${funcname}-frontend --load-balancing-scheme=EXTERNAL --target-https-proxy=${funcname}-https-proxy --ports=443 --global
-
-echo "Here is the IP address of the ${funcname}-frontend Load Balancer"
-gcloud compute forwarding-rules describe ${funcname}-frontend  --global | yq eval ".IPAddress"
-
-echo "Here is the URL direct to the Cloud Function"
+echo "Here is the direct URL to the Cloud Function"
 gcloud $channel functions describe $funcname --region $region --gen2 --format="value(serviceConfig.uri)"
 
