@@ -182,6 +182,7 @@ while [ 1 == 1 ]; do
       echo "region is $region"
       echo "zone is $zone"
       cd ..
+      gcloud config set project $project_id
 
       [ $retVal -eq 0 ] && done_status[$answer]="OK" || done_status[$answer]="ERR"
       ;;
