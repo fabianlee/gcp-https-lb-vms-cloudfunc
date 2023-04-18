@@ -16,8 +16,12 @@ fi
 funcname=maintgen2
 entry_point=maintenance_switch
 channel=beta
-region=us-east1
 
+region=$(gcloud config get compute/region)
+project_id=$(gcloud config get project)
+[[ (-n "$region") && (-n "$project_id") ]] || { echo "ERROR could not pull region or project id"; exit 1; }
+
+export PYTHONWARNINGS="ignore:Unverified HTTPS request"
 gcloud services enable cloudfunctions.googleapis.com cloudbuild.googleapis.com
 gcloud services enable cloudresourcemanager.googleapis.com run.googleapis.com artifactregistry.googleapis.com containerregistry.googleapis.com
 
@@ -29,7 +33,7 @@ gcloud $channel run services update $funcname --concurrency 100 --cpu=1 --region
 
 gcloud $channel functions describe $funcname --format "value(serviceConfig.uri)" --region=$region --gen2
 
-gcloud compute network-endpoint-groups create ${funcname}-neg --region=$region --network-endpoint-type=serverless --cloud-run-service=$funcname
+gcloud compute network-endpoint-groups create ${funcname}-neg --region=$region --network-endpoint-type=serverless --cloud-function-name=$funcname
 
 gcloud compute backend-services create ${funcname}-backend --load-balancing-scheme=EXTERNAL --global
 
