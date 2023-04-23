@@ -12,6 +12,9 @@ export PYTHONWARNINGS="ignore:Unverified HTTPS request"
 gcloud services enable cloudfunctions.googleapis.com cloudbuild.googleapis.com
 gcloud services enable cloudresourcemanager.googleapis.com run.googleapis.com artifactregistry.googleapis.com containerregistry.googleapis.com
 
+echo "sleeping 30 seconds to stabilize..."
+sleep 30
+
 region=$(gcloud config get compute/region)
 project_id=$(gcloud config get project)
 [[ (-n "$region") && (-n "$project_id") ]] || { echo "ERROR could not pull region or project id"; exit 1; }
